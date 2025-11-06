@@ -1,0 +1,142 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Navbar from '@/components/Navbar.astro';
+import Footer from '@/components/Footer.astro';
+import ScoreCard from '@/components/ScoreCard.astro';
+import FilterBar from '@/components/FilterBar.astro';
+import { supabase } from '@/lib/supabase';
+
+// Obtener parámetros de filtrado
+const url = new URL(Astro.request.url);
+const instrument = url.searchParams.get('instrument') || undefined;
+const difficulty = url.searchParams.get('difficulty') || undefined;
+const page = parseInt(url.searchParams.get('page') || '1');
+const perPage = 12;
+
+// Construir query con filtros
+let query = supabase
+  .from('scores')
+  .select(`
+    *,
+    composer:composers (
+      id,
+      name,
+      nationality
+    )
+  `, { count: 'exact' });
+
+if (instrument) {
+  query = query.eq('instrument', instrument);
+}
+
+if (difficulty) {
+  query = query.eq('difficulty', difficulty);
+}
+
+// Paginación
+const from = (page - 1) * perPage;
+const to = from + perPage - 1;
+
+query = query
+  .order('created_at', { ascending: false })
+  .range(from, to);
+
+const { data: scores, error, count } = await query;
+
+if (error) {
+  console.error('Error fetching scores:', error);
+}
+
+const totalPages = count ? Math.ceil(count / perPage) : 0;
+---
+
+<Layout title="Partituras - MusicLib">
+  <Navbar slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">
+        Catálogo de Partituras
+      </h1>
+      <p class="text-gray-600">
+        {count ? `${count} partituras disponibles` : 'Cargando...'}
+      </p>
+    </div>
+
+    <!-- Filtros -->
+    <FilterBar 
+      currentInstrument={instrument} 
+      currentDifficulty={difficulty} 
+    />
+
+    <!-- Resultados -->
+    {scores && scores.length > 0 ? (
+      <>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+          {scores.map(score => (
+            <ScoreCard score={score} />
+          ))}
+        </div>
+
+        <!-- Paginación -->
+        {totalPages > 1 && (
+          <nav class="flex justify-center items-center gap-2">
+            {page > 1 && (
+              <a 
+                href={`?page=${page - 1}${instrument ? `&instrument=${instrument}` : ''}${difficulty ? `&difficulty=${difficulty}` : ''}`}
+                class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+              >
+                ← Anterior
+              </a>
+            )}
+
+            <div class="flex gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                <a
+                  href={`?page=${p}${instrument ? `&instrument=${instrument}` : ''}${difficulty ? `&difficulty=${difficulty}` : ''}`}
+                  class={`px-4 py-2 rounded-lg ${
+                    p === page
+                      ? 'bg-primary-600 text-white'
+                      : 'border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {p}
+                </a>
+              ))}
+            </div>
+
+            {page < totalPages && (
+              <a 
+                href={`?page=${page + 1}${instrument ? `&instrument=${instrument}` : ''}${difficulty ? `&difficulty=${difficulty}` : ''}`}
+                class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+              >
+                Siguiente →
+              </a>
+            )}
+          </nav>
+        )}
+      </>
+    ) : (
+      <div class="text-center py-12">
+        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+        </svg>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">
+          No se encontraron partituras
+        </h3>
+        <p class="text-gray-600 mb-4">
+          Intenta ajustar los filtros de búsqueda
+        </p>
+        <a href="/partituras" class="btn-primary inline-block">
+          Limpiar filtros
+        </a>
+      </div>
+    )}
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>

@@ -1,0 +1,250 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Navbar from '@/components/Navbar.astro';
+import Footer from '@/components/Footer.astro';
+import ScoreCard from '@/components/ScoreCard.astro';
+import { getScoreById, supabase } from '@/lib/supabase';
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/partituras');
+}
+
+// Obtener partitura
+const score = await getScoreById(id);
+
+if (!score) {
+  return Astro.redirect('/partituras');
+}
+
+// Incrementar contador de vistas
+await supabase
+  .from('scores')
+  .update({ views: score.views + 1 })
+  .eq('id', id);
+
+// Obtener partituras relacionadas del mismo compositor
+const { data: relatedScores } = await supabase
+  .from('scores')
+  .select(`
+    *,
+    composer:composers (
+      id,
+      name,
+      nationality
+    )
+  `)
+  .eq('composer_id', score.composer_id)
+  .neq('id', id)
+  .limit(4);
+
+const difficultyLabels = {
+  beginner: 'Principiante',
+  intermediate: 'Intermedio',
+  advanced: 'Avanzado',
+  expert: 'Experto',
+};
+---
+
+<Layout 
+  title={`${score.title} - ${score.composer.name} | MusicLib`}
+  description={score.description || `Partitura de ${score.title} por ${score.composer.name}. Instrumento: ${score.instrument}.`}
+>
+  <Navbar slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-600 mb-6">
+      <a href="/" class="hover:text-primary-600">Inicio</a>
+      <span class="mx-2">/</span>
+      <a href="/partituras" class="hover:text-primary-600">Partituras</a>
+      <span class="mx-2">/</span>
+      <span class="text-gray-900">{score.title}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Imagen principal -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24">
+          <div class="aspect-[3/4] bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg overflow-hidden shadow-xl">
+            {score.thumbnail_url ? (
+              <img 
+                src={score.thumbnail_url} 
+                alt={score.title}
+                class="w-full h-full object-cover"
+              />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-32 h-32 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                </svg>
+              </div>
+            )}
+          </div>
+
+          <!-- Botón de descarga -->
+          <button
+            id="download-btn"
+            data-score-id={score.id}
+            data-score-title={score.title}
+            class="w-full mt-4 bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Descargar PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Información -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Título y compositor -->
+        <div>
+          <h1 class="text-4xl font-bold text-gray-900 mb-2">
+            {score.title}
+          </h1>
+          <a 
+            href={`/compositores/${score.composer.id}`}
+            class="text-xl text-primary-600 hover:text-primary-700"
+          >
+            {score.composer.name}
+          </a>
+        </div>
+
+        <!-- Metadatos -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-sm text-gray-600 mb-1">Instrumento</div>
+            <div class="font-semibold text-gray-900">{score.instrument}</div>
+          </div>
+
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-sm text-gray-600 mb-1">Dificultad</div>
+            <div class="font-semibold text-gray-900">
+              {difficultyLabels[score.difficulty]}
+            </div>
+          </div>
+
+          {score.year_composed && (
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-600 mb-1">Año</div>
+              <div class="font-semibold text-gray-900">{score.year_composed}</div>
+            </div>
+          )}
+
+          {score.duration_minutes && (
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-600 mb-1">Duración</div>
+              <div class="font-semibold text-gray-900">{score.duration_minutes} min</div>
+            </div>
+          )}
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="flex gap-6 text-sm text-gray-600">
+          <span class="flex items-center gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            {score.views + 1} vistas
+          </span>
+          
+          <span class="flex items-center gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span id="download-count">{score.downloads}</span> descargas
+          </span>
+        </div>
+
+        <!-- Descripción -->
+        {score.description && (
+          <div class="prose max-w-none">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-3">
+              Sobre esta partitura
+            </h2>
+            <p class="text-gray-700 leading-relaxed">
+              {score.description}
+            </p>
+          </div>
+        )}
+
+        <!-- Género -->
+        {score.genre && (
+          <div>
+            <h3 class="text-sm font-medium text-gray-600 mb-2">Género</h3>
+            <span class="inline-block bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">
+              {score.genre}
+            </span>
+          </div>
+        )}
+
+      </div>
+    </div>
+
+    <!-- Partituras relacionadas -->
+    {relatedScores && relatedScores.length > 0 && (
+      <section class="mt-16">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+          Más de {score.composer.name}
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {relatedScores.map(relatedScore => (
+            <ScoreCard score={relatedScore} />
+          ))}
+        </div>
+      </section>
+    )}
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+  // Manejar descarga de PDF
+  const downloadBtn = document.getElementById('download-btn');
+  const downloadCount = document.getElementById('download-count');
+
+  downloadBtn?.addEventListener('click', async () => {
+    const scoreId = downloadBtn.getAttribute('data-score-id');
+    const scoreTitle = downloadBtn.getAttribute('data-score-title');
+
+    if (!scoreId) return;
+
+    try {
+      // Incrementar contador de descargas
+      const response = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scoreId })
+      });
+
+      if (response.ok) {
+        const { downloads } = await response.json();
+        if (downloadCount) {
+          downloadCount.textContent = downloads.toString();
+        }
+      }
+
+      // Aquí iría la lógica real de descarga desde R2
+      // Por ahora, simulamos la descarga
+      alert(`Descargando: ${scoreTitle}.pdf`);
+      
+    } catch (error) {
+      console.error('Error al descargar:', error);
+      alert('Error al descargar la partitura');
+    }
+  });
+</script>

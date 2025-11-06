@@ -1,0 +1,87 @@
+---
+import type { ScoreWithComposer } from '@/lib/types';
+
+interface Props {
+  score: ScoreWithComposer;
+}
+
+const { score } = Astro.props;
+
+// Badge de dificultad con colores
+const difficultyConfig = {
+  beginner: { label: 'Principiante', color: 'bg-green-100 text-green-800' },
+  intermediate: { label: 'Intermedio', color: 'bg-yellow-100 text-yellow-800' },
+  advanced: { label: 'Avanzado', color: 'bg-orange-100 text-orange-800' },
+  expert: { label: 'Experto', color: 'bg-red-100 text-red-800' },
+};
+
+const difficulty = difficultyConfig[score.difficulty];
+---
+
+<article class="card group hover:scale-[1.02] transition-transform duration-200">
+  <a href={`/partituras/${score.id}`} class="block">
+    
+    <!-- Thumbnail -->
+    <div class="relative aspect-[3/4] bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg mb-4 overflow-hidden">
+      {score.thumbnail_url ? (
+        <img 
+          src={score.thumbnail_url} 
+          alt={score.title}
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <div class="w-full h-full flex items-center justify-center">
+          <svg class="w-20 h-20 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+          </svg>
+        </div>
+      )}
+      
+      <!-- Badge de dificultad -->
+      <span class={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${difficulty.color}`}>
+        {difficulty.label}
+      </span>
+    </div>
+
+    <!-- Contenido -->
+    <div class="space-y-2">
+      <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2">
+        {score.title}
+      </h3>
+      
+      <p class="text-sm text-gray-600">
+        {score.composer.name}
+      </p>
+
+      <div class="flex items-center gap-4 text-xs text-gray-500">
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+          </svg>
+          {score.instrument}
+        </span>
+        
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          {score.views}
+        </span>
+        
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          {score.downloads}
+        </span>
+      </div>
+    </div>
+  </a>
+</article>

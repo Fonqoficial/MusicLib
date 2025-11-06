@@ -1,0 +1,42 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Navbar from '@/components/Navbar.astro';
+import Footer from '@/components/Footer.astro';
+import ComposerCard from '@/components/ComposerCard.astro';
+import { getComposers } from '@/lib/supabase';
+
+const composers = await getComposers();
+---
+
+<Layout title="Compositores - MusicLib">
+  <Navbar slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">
+        Compositores
+      </h1>
+      <p class="text-gray-600">
+        Explora la obra de grandes maestros de la música clásica
+      </p>
+    </div>
+
+    <!-- Grid de compositores -->
+    {composers && composers.length > 0 ? (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {composers.map(composer => (
+          <ComposerCard composer={composer} />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <p class="text-gray-600">No hay compositores disponibles</p>
+      </div>
+    )}
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
