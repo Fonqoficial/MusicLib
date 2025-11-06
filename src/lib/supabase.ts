@@ -1,21 +1,36 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+// Lazily create the Supabase client to avoid throwing during module import
+let _supabase: any = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
+function resolveSupabaseEnv() {
+  // Prefer import.meta.env (Vite) but fallback to process.env (runtime)
+  const url = (import.meta.env as any).PUBLIC_SUPABASE_URL ?? process.env.PUBLIC_SUPABASE_URL;
+  const key = (import.meta.env as any).PUBLIC_SUPABASE_ANON_KEY ?? process.env.PUBLIC_SUPABASE_ANON_KEY;
+  return { url, key };
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false
+export function getSupabase() {
+  if (_supabase) return _supabase;
+
+  const { url, key } = resolveSupabaseEnv();
+  if (!url || !key) {
+    throw new Error('Missing Supabase environment variables');
   }
-});
+
+  _supabase = createClient<Database>(url, key, {
+    auth: {
+      persistSession: false,
+    },
+  });
+
+  return _supabase;
+}
 
 // Funciones helper
 export async function getScores(limit = 20) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('scores')
     .select(`
@@ -34,6 +49,7 @@ export async function getScores(limit = 20) {
 }
 
 export async function getScoreById(id: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('scores')
     .select(`
@@ -48,6 +64,7 @@ export async function getScoreById(id: string) {
 }
 
 export async function getComposers() {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('composers')
     .select('*')
@@ -58,6 +75,7 @@ export async function getComposers() {
 }
 
 export async function incrementDownloads(scoreId: string) {
+  const supabase = getSupabase();
   const { error } = await supabase.rpc('increment_downloads', {
     score_id: scoreId
   });
