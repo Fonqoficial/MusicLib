@@ -8,7 +8,12 @@ export default defineConfig({
   integrations: [tailwind()],
   vite: {
     optimizeDeps: {
-      exclude: ['@supabase/supabase-js']
+      include: ['@supabase/supabase-js'],
+    },
+    build: {
+      rollupOptions: {
+        external: ['@supabase/supabase-js']
+      }
     }
   }
 });

@@ -19,12 +19,7 @@ export function getSupabase() {
     throw new Error('Missing Supabase environment variables');
   }
 
-  _supabase = createClient<Database>(url, key, {
-    auth: {
-      persistSession: false,
-    },
-  });
-
+  _supabase = createClient<Database>(url, key);
   return _supabase;
 }
 

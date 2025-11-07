@@ -17,7 +17,7 @@ import Layout from '@/layouts/Layout.astro';
       </div>
 
       <!-- Formulario -->
-      <form id="login-form" class="mt-8 space-y-6">
+      <form id="login-form" class="mt-8 space-y-6" method="POST">
         <div class="rounded-md shadow-sm space-y-4">
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
@@ -28,6 +28,7 @@ import Layout from '@/layouts/Layout.astro';
               name="email"
               type="email"
               required
+              autocomplete="email"
               class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               placeholder="admin@ejemplo.com"
             />
@@ -42,6 +43,7 @@ import Layout from '@/layouts/Layout.astro';
               name="password"
               type="password"
               required
+              autocomplete="current-password"
               class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               placeholder="••••••••"
             />
@@ -69,46 +71,58 @@ import Layout from '@/layouts/Layout.astro';
     </div>
   </div>
 
-  <script type="module">
-    import { supabase } from '@/lib/supabase';
-
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('login-form');
     const errorDiv = document.getElementById('error-message');
+    const submitButton = document.getElementById('submit-button');
 
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (submitButton) {
+        submitButton.setAttribute('disabled', 'true');
+        submitButton.textContent = 'Iniciando sesión...';
+      }
+      
+      if (errorDiv) {
+        errorDiv.classList.add('hidden');
+      }
 
-        const formData = new FormData(form);
-        const email = String(formData.get('email'));
-        const password = String(formData.get('password'));
+      try {
+        const formData = new FormData(e.target);
+        const { createClient } = await import('@supabase/supabase-js');
+        
+        const supabase = createClient(
+          import.meta.env.PUBLIC_SUPABASE_URL,
+          import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+        );
 
-        try {
-          console.log('Login attempt for:', email);
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.get('email'),
+          password: formData.get('password')
+        });
 
-          console.log('Supabase signIn response:', { data, error });
+        if (error) throw error;
 
-          if (error) throw error;
-
-          // Obtener URL de redirección
-          const params = new URLSearchParams(window.location.search);
-          const redirect = params.get('redirect') || '/admin';
-
-          // Redirigir
-          window.location.href = redirect;
-
-        } catch (error) {
-          console.error('Login error:', error);
-          if (errorDiv) {
-            errorDiv.textContent = 'Email o contraseña incorrectos';
-            errorDiv.classList.remove('hidden');
-          }
+        if (data.user) {
+          window.location.href = '/admin';
+          return;
         }
-      });
-    }
-  </script>
+
+        throw new Error('Login failed');
+      } catch (error) {
+        console.error('Error:', error);
+        if (errorDiv) {
+          errorDiv.textContent = 'Email o contraseña incorrectos';
+          errorDiv.classList.remove('hidden');
+        }
+        if (submitButton) {
+          submitButton.removeAttribute('disabled');
+          submitButton.textContent = 'Iniciar Sesión';
+        }
+      }
+    });
+  });
+</script>
 </Layout>
