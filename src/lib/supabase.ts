@@ -28,6 +28,18 @@ export function getSupabase() {
   return _supabase;
 }
 
+// Exportar un proxy 'supabase' para mantener compatibilidad con el código que
+// importa `{ supabase }` y llama a sus métodos directamente. El proxy resuelve
+// el cliente de forma perezosa usando getSupabase().
+export const supabase: any = new Proxy({}, {
+  get(_target, prop: string | symbol) {
+    const client = getSupabase();
+    const value = (client as any)[prop as any];
+    if (typeof value === 'function') return value.bind(client);
+    return value;
+  }
+});
+
 // Funciones helper
 export async function getScores(limit = 20) {
   const supabase = getSupabase();
