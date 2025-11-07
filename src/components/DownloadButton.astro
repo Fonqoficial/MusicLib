@@ -1,0 +1,141 @@
+---
+interface Props {
+  scoreId: string;
+  scoreTitle: string;
+  currentDownloads: number;
+}
+
+const { scoreId, scoreTitle, currentDownloads } = Astro.props;
+---
+
+<div class="download-container">
+  <button
+    id="advanced-download-btn"
+    data-score-id={scoreId}
+    data-score-title={scoreTitle}
+    class="w-full bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+    </svg>
+    <span class="btn-text">Descargar PDF</span>
+  </button>
+
+  <!-- Información de descarga -->
+  <div class="mt-2 text-center">
+    <p class="text-sm text-gray-600">
+      <span id="download-counter">{currentDownloads}</span> descargas
+    </p>
+  </div>
+
+  <!-- Barra de progreso (opcional, para descarga via fetch) -->
+  <div id="progress-bar" class="hidden mt-3">
+    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+      <div id="progress-fill" class="bg-primary-600 h-2 transition-all duration-300" style="width: 0%"></div>
+    </div>
+    <p class="text-xs text-gray-600 mt-1 text-center">
+      <span id="progress-text">Preparando descarga...</span>
+    </p>
+  </div>
+</div>
+
+<script>
+  const btn = document.getElementById('advanced-download-btn');
+  const btnText = btn?.querySelector('.btn-text');
+  const counter = document.getElementById('download-counter');
+  const progressBar = document.getElementById('progress-bar');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+
+  btn?.addEventListener('click', async () => {
+    const scoreId = btn.getAttribute('data-score-id');
+    const scoreTitle = btn.getAttribute('data-score-title');
+
+    if (!scoreId || !btnText) return;
+
+    // Deshabilitar botón
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    
+    const originalHTML = btnText.innerHTML;
+    btnText.innerHTML = 'Preparando...';
+
+    // Mostrar progreso
+    progressBar?.classList.remove('hidden');
+    
+    try {
+      // Simular progreso inicial
+      updateProgress(10, 'Conectando con servidor...');
+      
+      await new Promise(resolve => setTimeout(resolve, 300));
+      updateProgress(30, 'Verificando archivo...');
+
+      // Obtener URL de descarga
+      const infoResponse = await fetch(`/api/download-info/${scoreId}`);
+      
+      if (!infoResponse.ok) {
+        throw new Error('No se pudo obtener la información de descarga');
+      }
+
+      const info = await infoResponse.json();
+      updateProgress(60, 'Generando enlace seguro...');
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+      updateProgress(90, 'Iniciando descarga...');
+
+      // Iniciar descarga
+      window.location.href = info.downloadUrl;
+
+      updateProgress(100, '¡Descarga iniciada!');
+
+      // Actualizar contador en segundo plano
+      fetch(`/api/download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scoreId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (counter && data.downloads) {
+          counter.textContent = data.downloads.toString();
+        }
+      })
+      .catch(err => console.error('Error updating counter:', err));
+
+      // Restaurar después de 2 segundos
+      setTimeout(() => {
+        btnText.innerHTML = originalHTML;
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        progressBar?.classList.add('hidden');
+        updateProgress(0, '');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Download error:', error);
+      
+      // Mostrar error
+      btnText.innerHTML = 'Error al descargar';
+      updateProgress(0, 'Error en la descarga');
+      
+      setTimeout(() => {
+        btnText.innerHTML = originalHTML;
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        progressBar?.classList.add('hidden');
+      }, 2000);
+
+      alert('No se pudo descargar la partitura. Por favor, intenta de nuevo.');
+    }
+  });
+
+  function updateProgress(percent: number, text: string) {
+    if (progressFill) {
+      progressFill.style.width = `${percent}%`;
+    }
+    if (progressText) {
+      progressText.textContent = text;
+    }
+  }
+</script>

@@ -223,28 +223,63 @@ const difficultyLabels = {
 
     if (!scoreId) return;
 
+    // Deshabilitar botón mientras descarga
+    downloadBtn.disabled = true;
+    downloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    downloadBtn.innerHTML = `
+      <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Descargando...
+    `;
+
     try {
-      // Incrementar contador de descargas
-      const response = await fetch('/api/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scoreId })
-      });
+      // Opción 1: Descarga directa (redirige a la URL de R2)
+      window.location.href = `/api/download/${scoreId}`;
 
-      if (response.ok) {
-        const { downloads } = await response.json();
-        if (downloadCount) {
-          downloadCount.textContent = downloads.toString();
-        }
-      }
+      // Esperar un poco y restaurar el botón
+      setTimeout(() => {
+        downloadBtn.disabled = false;
+        downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        downloadBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Descargar PDF
+        `;
 
-      // Aquí iría la lógica real de descarga desde R2
-      // Por ahora, simulamos la descarga
-      alert(`Descargando: ${scoreTitle}.pdf`);
-      
+        // Actualizar contador de descargas
+        fetch(`/api/download`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scoreId })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (downloadCount && data.downloads) {
+            downloadCount.textContent = data.downloads.toString();
+          }
+        })
+        .catch(err => console.error('Error updating counter:', err));
+
+      }, 2000);
+
     } catch (error) {
       console.error('Error al descargar:', error);
-      alert('Error al descargar la partitura');
+      
+      // Restaurar botón
+      downloadBtn.disabled = false;
+      downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      downloadBtn.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Descargar PDF
+      `;
+      
+      alert('Error al descargar la partitura. Por favor, intenta de nuevo.');
     }
   });
 </script>
