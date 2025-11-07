@@ -68,42 +68,47 @@ import Layout from '@/layouts/Layout.astro';
 
     </div>
   </div>
-</Layout>
 
-<script>
-  import { supabase } from '@/lib/supabase';
+  <script type="module">
+    import { supabase } from '@/lib/supabase';
 
-  const form = document.getElementById('login-form') as HTMLFormElement;
-  const errorDiv = document.getElementById('error-message');
+    const form = document.getElementById('login-form');
+    const errorDiv = document.getElementById('error-message');
 
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const formData = new FormData(form);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+        const formData = new FormData(form);
+        const email = String(formData.get('email'));
+        const password = String(formData.get('password'));
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        try {
+          console.log('Login attempt for:', email);
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          console.log('Supabase signIn response:', { data, error });
+
+          if (error) throw error;
+
+          // Obtener URL de redirección
+          const params = new URLSearchParams(window.location.search);
+          const redirect = params.get('redirect') || '/admin';
+
+          // Redirigir
+          window.location.href = redirect;
+
+        } catch (error) {
+          console.error('Login error:', error);
+          if (errorDiv) {
+            errorDiv.textContent = 'Email o contraseña incorrectos';
+            errorDiv.classList.remove('hidden');
+          }
+        }
       });
-
-      if (error) throw error;
-
-      // Obtener URL de redirección
-      const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect') || '/admin';
-
-      // Redirigir
-      window.location.href = redirect;
-
-    } catch (error) {
-      console.error('Login error:', error);
-      if (errorDiv) {
-        errorDiv.textContent = 'Email o contraseña incorrectos';
-        errorDiv.classList.remove('hidden');
-      }
     }
-  });
-</script>
+  </script>
+</Layout>
