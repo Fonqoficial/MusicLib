@@ -1,13 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Lazily create the Supabase client to avoid throwing during module import
-let _supabase: any = null;
+// Cliente Supabase singleton
+let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 
 function resolveSupabaseEnv() {
-  // Prefer import.meta.env (Vite) but fallback to process.env (runtime)
-  const url = (import.meta.env as any).PUBLIC_SUPABASE_URL ?? process.env.PUBLIC_SUPABASE_URL;
-  const key = (import.meta.env as any).PUBLIC_SUPABASE_ANON_KEY ?? process.env.PUBLIC_SUPABASE_ANON_KEY;
+  // En Vercel: import.meta.env funciona tanto en build como en runtime
+  // Las variables públicas están disponibles automáticamente
+  const url = import.meta.env.PUBLIC_SUPABASE_URL;
+  const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  
   return { url, key };
 }
 
@@ -15,18 +17,25 @@ export function getSupabase() {
   if (_supabase) return _supabase;
 
   const { url, key } = resolveSupabaseEnv();
+  
   if (!url || !key) {
-    throw new Error('Missing Supabase environment variables');
+    throw new Error('Missing Supabase environment variables: PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are required');
   }
 
-  _supabase = createClient<Database>(url, key);
+  _supabase = createClient<Database>(url, key, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined
+    }
+  });
+  
   return _supabase;
 }
 
-// Exportar un proxy 'supabase' para mantener compatibilidad con el código que
-// importa `{ supabase }` y llama a sus métodos directamente. El proxy resuelve
-// el cliente de forma perezosa usando getSupabase().
-export const supabase: any = new Proxy({}, {
+// Exportar un proxy 'supabase' para mantener compatibilidad con código legacy
+// NOTA: Preferir usar getSupabase() directamente en código nuevo
+export const supabase: ReturnType<typeof createClient<Database>> = new Proxy({} as any, {
   get(_target, prop: string | symbol) {
     const client = getSupabase();
     const value = (client as any)[prop as any];
@@ -35,7 +44,10 @@ export const supabase: any = new Proxy({}, {
   }
 });
 
-// Funciones helper
+// ============================================================================
+// FUNCIONES HELPER
+// ============================================================================
+
 export async function getScores(limit = 20) {
   const supabase = getSupabase();
   const { data, error } = await supabase

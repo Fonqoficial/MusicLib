@@ -1,29 +1,18 @@
-import { supabase } from './supabase';
+import { getCurrentUser, getUserRole, isAdmin, requireAdmin } from '@/lib/auth';
 
-export async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
-
-export async function getUserRole(userId: string) {
-  const { data, error } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .single();
-
-  if (error) return null;
-  return data?.role;
-}
-
-export async function isAdmin(userId: string): Promise<boolean> {
-  const role = await getUserRole(userId);
-  return role === 'admin';
-}
-
-export async function requireAdmin(userId: string) {
-  const admin = await isAdmin(userId);
-  if (!admin) {
-    throw new Error('Acceso no autorizado');
+// Verificar si es admin
+const user = await getCurrentUser();
+if (user) {
+  const admin = await isAdmin(user.id);
+  if (admin) {
+    // Mostrar panel de admin
   }
+}
+
+// Proteger ruta (lanza error si no es admin)
+try {
+  await requireAdmin(userId);
+  // Código que solo admins pueden ejecutar
+} catch (error) {
+  console.error('Acceso denegado');
 }
