@@ -86,7 +86,7 @@ export async function uploadPDF(file: File, key: string): Promise<string> {
     const command = new PutObjectCommand({
       Bucket: config.bucketName,
       Key: key,
-      Body: Buffer.from(buffer),
+      Body: new Uint8Array(buffer) as any,
       ContentType: 'application/pdf',
       ContentDisposition: `attachment; filename="${encodeURIComponent(file.name)}"`,
       Metadata: {
