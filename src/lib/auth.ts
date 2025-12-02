@@ -11,7 +11,7 @@ if (user) {
 
 // Proteger ruta (lanza error si no es admin)
 try {
-  await requireAdmin(userId);
+  await requireAdmin(user.id);
   // Código que solo admins pueden ejecutar
 } catch (error) {
   console.error('Acceso denegado');
