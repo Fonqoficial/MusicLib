@@ -95,7 +95,9 @@ export async function getComposers() {
 
 export async function incrementDownloads(scoreId: string) {
   const supabase = getSupabase();
-  const { error } = await supabase.rpc('increment_downloads', {
+  // Cast to `any` because RPC typings are not defined in the `Database` type
+  // (adds flexibility until you add a typed Functions section to `Database`).
+  const { error } = await (supabase as any).rpc('increment_downloads', {
     score_id: scoreId
   });
 

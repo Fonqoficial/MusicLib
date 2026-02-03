@@ -24,8 +24,8 @@ export const onRequest = defineMiddleware(async ({ request, locals, redirect }, 
     }
 
     // Pasar usuario a locals
-    locals.user = session.user;
-    locals.isAdmin = true;
+    (locals as any).user = session.user;
+    (locals as any).isAdmin = true;
   }
 
   return next();
