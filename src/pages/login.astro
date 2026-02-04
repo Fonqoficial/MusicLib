@@ -1,11 +1,5 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-
-// Si ya está autenticado, redirigir
-const sessionCookie = Astro.cookies.get('sb-access-token');
-if (sessionCookie) {
-  return Astro.redirect('/admin');
-}
 ---
 
 <Layout title="Iniciar Sesión - Admin">
@@ -55,18 +49,12 @@ if (sessionCookie) {
         </div>
 
         <!-- Error message -->
-        <div id="error-message" class="hidden text-red-600 text-sm text-center p-3 bg-red-50 rounded-lg"></div>
-
-        <!-- Loading message -->
-        <div id="loading-message" class="hidden text-blue-600 text-sm text-center p-3 bg-blue-50 rounded-lg">
-          Iniciando sesión...
-        </div>
+        <div id="error-message" class="hidden text-red-600 text-sm text-center"></div>
 
         <!-- Submit button -->
         <button
           type="submit"
-          id="submit-btn"
-          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           Iniciar Sesión
         </button>
@@ -83,14 +71,10 @@ if (sessionCookie) {
 </Layout>
 
 <script>
-  import { createBrowserClient } from '@/lib/supabase';
+  import { supabase } from '@/lib/supabase';
 
-  const supabase = createBrowserClient();
-  
   const form = document.getElementById('login-form') as HTMLFormElement;
   const errorDiv = document.getElementById('error-message');
-  const loadingDiv = document.getElementById('loading-message');
-  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -99,48 +83,25 @@ if (sessionCookie) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    // Mostrar loading
-    errorDiv?.classList.add('hidden');
-    loadingDiv?.classList.remove('hidden');
-    submitBtn.disabled = true;
-
     try {
-      console.log('Intentando login con:', email);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        console.error('Error de login:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Login exitoso:', data);
-      
       // Obtener URL de redirección
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect') || '/admin';
-
-      console.log('Redirigiendo a:', redirect);
-
-      // Pequeño delay para asegurar que la sesión se guarde
-      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Redirigir
       window.location.href = redirect;
 
     } catch (error) {
       console.error('Login error:', error);
-      
-      loadingDiv?.classList.add('hidden');
-      submitBtn.disabled = false;
-      
       if (errorDiv) {
-        errorDiv.textContent = error instanceof Error 
-          ? error.message 
-          : 'Email o contraseña incorrectos';
+        errorDiv.textContent = 'Email o contraseña incorrectos';
         errorDiv.classList.remove('hidden');
       }
     }
