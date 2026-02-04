@@ -1,43 +1,37 @@
-# Astro Starter Kit: Minimal
+# 🎵 Music Library App
 
-```sh
-npm create astro@latest -- --template minimal
-```
+![Licencia](https://img.shields.io/badge/license-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+**Music Library** es una aplicación web moderna y minimalista diseñada para gestionar y visualizar tu colección de álbumes musicales. Con una interfaz elegante en modo oscuro, permite organizar tus discos favoritos de forma rápida e intuitiva.
 
-## 🚀 Project Structure
+🚀 **Demo en vivo:** [https://musiclibrary-seven.vercel.app/](https://musiclibrary-seven.vercel.app/)
 
-Inside of your Astro project, you'll see the following folders and files:
+---
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## ✨ Características
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+* **Gestión Integral (CRUD):** Añade nuevos álbumes, edita la información existente o elimina los que ya no escuches.
+* **Filtrado por Género:** Navegación fluida entre categorías (Rock, Pop, Jazz, etc.).
+* **Buscador en Tiempo Real:** Localiza cualquier álbum o artista al instante.
+* **Diseño Responsive:** Experiencia optimizada para móviles, tablets y ordenadores de sobremesa.
+* **Interfaz Premium:** Estética dark-mode con transiciones suaves y enfoque en las portadas.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 🛠️ Stack Tecnológico
 
-Any static assets, like images, can be placed in the `public/` directory.
+* **Frontend:** React.js
+* **Estilos:** Tailwind CSS
+* **Iconografía:** Lucide React
+* **Despliegue:** Vercel
 
-## 🧞 Commands
+---
 
-All commands are run from the root of the project, from a terminal:
+## 🚀 Instalación y Uso Local
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Si deseas clonar este proyecto y ejecutarlo en tu equipo, sigue estos pasos:
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+1. **Clona el repositorio:**
+   ```bash
+   git clone [https://github.com/tu-usuario/nombre-del-repo.git](https://github.com/tu-usuario/nombre-del-repo.git)
