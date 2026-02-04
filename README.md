@@ -1,11 +1,11 @@
-# 🎵 Music Library App
+# 🎵 Music Library App (Astro)
 
 ![Licencia](https://img.shields.io/badge/license-MIT-blue.svg)
-![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Astro](https://img.shields.io/badge/Astro-BC52EE?style=flat&logo=astro&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 
-**Music Library** es una aplicación web moderna y minimalista diseñada para gestionar y visualizar tu colección de álbumes musicales. Con una interfaz elegante en modo oscuro, permite organizar tus discos favoritos de forma rápida e intuitiva.
+**Music Library** es una aplicación web de alto rendimiento construida con **Astro**. Ofrece una interfaz elegante en modo oscuro para gestionar y visualizar tu colección de álbumes, aprovechando la arquitectura de islas para una carga ultrarrápida.
 
 🚀 **Demo en vivo:** [https://musiclibrary-seven.vercel.app/](https://musiclibrary-seven.vercel.app/)
 
@@ -13,24 +13,24 @@
 
 ## ✨ Características
 
-* **Gestión Integral (CRUD):** Añade nuevos álbumes, edita la información existente o elimina los que ya no escuches.
+* **Rendimiento Óptimo:** Construido con Astro para garantizar una carga de página mínima y un SEO excelente.
+* **Gestión de Álbumes:** Interfaz intuitiva para organizar tu biblioteca musical.
 * **Filtrado por Género:** Navegación fluida entre categorías (Rock, Pop, Jazz, etc.).
-* **Buscador en Tiempo Real:** Localiza cualquier álbum o artista al instante.
-* **Diseño Responsive:** Experiencia optimizada para móviles, tablets y ordenadores de sobremesa.
-* **Interfaz Premium:** Estética dark-mode con transiciones suaves y enfoque en las portadas.
+* **Diseño Responsive:** Totalmente adaptado para móviles, tablets y escritorio utilizando Tailwind CSS.
+* **Interfaz Dark Mode:** Estética moderna y minimalista con iconos de Lucide.
 
 ## 🛠️ Stack Tecnológico
 
-* **Frontend:** React.js
+* **Framework:** [Astro](https://astro.build/)
 * **Estilos:** Tailwind CSS
-* **Iconografía:** Lucide React
+* **Iconografía:** Lucide React / Astro
 * **Despliegue:** Vercel
 
 ---
 
 ## 🚀 Instalación y Uso Local
 
-Si deseas clonar este proyecto y ejecutarlo en tu equipo, sigue estos pasos:
+Para clonar y ejecutar este proyecto de Astro en tu equipo:
 
 1. **Clona el repositorio:**
    ```bash
