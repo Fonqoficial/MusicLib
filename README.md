@@ -15,9 +15,8 @@
 
 * **Rendimiento Óptimo:** Construido con Astro para garantizar una carga de página mínima y un SEO excelente.
 * **Gestión de Álbumes:** Interfaz intuitiva para organizar tu biblioteca musical.
-* **Filtrado por Género:** Navegación fluida entre categorías (Rock, Pop, Jazz, etc.).
+* **Filtrado por Género:** Navegación fluida entre categorías.
 * **Diseño Responsive:** Totalmente adaptado para móviles, tablets y escritorio utilizando Tailwind CSS.
-* **Interfaz Dark Mode:** Estética moderna y minimalista con iconos de Lucide.
 
 ## 🛠️ Stack Tecnológico
 
@@ -25,13 +24,3 @@
 * **Estilos:** Tailwind CSS
 * **Iconografía:** Lucide React / Astro
 * **Despliegue:** Vercel
-
----
-
-## 🚀 Instalación y Uso Local
-
-Para clonar y ejecutar este proyecto de Astro en tu equipo:
-
-1. **Clona el repositorio:**
-   ```bash
-   git clone [https://github.com/tu-usuario/nombre-del-repo.git](https://github.com/tu-usuario/nombre-del-repo.git)
