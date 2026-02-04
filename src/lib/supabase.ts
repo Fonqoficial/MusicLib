@@ -8,13 +8,26 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// Cliente para el servidor (sin persistencia de sesión)
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: false
+    persistSession: false,
+    autoRefreshToken: false,
   }
 });
 
-// Funciones helper
+// Cliente para el navegador (CON persistencia de sesión)
+export const createBrowserClient = () => {
+  return createClient<Database>(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    }
+  });
+};
+
 export async function getScores(limit = 20) {
   const { data, error } = await supabase
     .from('scores')
@@ -32,6 +45,7 @@ export async function getScores(limit = 20) {
   if (error) throw error;
   return data;
 }
+
 
 export async function getScoreById(id: string) {
   const { data, error } = await supabase

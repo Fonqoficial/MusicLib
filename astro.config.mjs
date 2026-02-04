@@ -13,5 +13,11 @@ export default defineConfig({
     optimizeDeps: {
       exclude: ['@supabase/supabase-js']
     }
+  },
+  // Asegurar que las cookies se manejen correctamente
+  server: {
+    headers: {
+      'Access-Control-Allow-Credentials': 'true'
+    }
   }
 });
