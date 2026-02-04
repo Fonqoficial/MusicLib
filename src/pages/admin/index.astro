@@ -2,13 +2,6 @@
 import Layout from '@/layouts/Layout.astro';
 import { supabase } from '@/lib/supabase';
 
-// Verificar autenticación
-const { data: { session } } = await supabase.auth.getSession();
-
-if (!session?.user) {
-  return Astro.redirect('/login?redirect=/admin');
-}
-
 // Obtener estadísticas
 const { count: totalScores } = await supabase
   .from('scores')
@@ -180,7 +173,7 @@ const { data: recentScores } = await supabase
   </div>
 </Layout>
 
-<script type="module">
+<script>
   import { supabase } from '@/lib/supabase';
 
   const logoutBtn = document.getElementById('logout-btn');

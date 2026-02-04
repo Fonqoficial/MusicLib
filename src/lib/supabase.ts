@@ -1,55 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Cliente Supabase singleton
-let _supabase: ReturnType<typeof createClient<Database>> | null = null;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-function resolveSupabaseEnv() {
-  // En Vercel: import.meta.env funciona tanto en build como en runtime
-  // Las variables públicas están disponibles automáticamente
-  const url = import.meta.env.PUBLIC_SUPABASE_URL;
-  const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-  
-  return { url, key };
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
 }
 
-export function getSupabase() {
-  if (_supabase) return _supabase;
-
-  const { url, key } = resolveSupabaseEnv();
-  
-  if (!url || !key) {
-    throw new Error('Missing Supabase environment variables: PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are required');
-  }
-
-  _supabase = createClient<Database>(url, key, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined
-    }
-  });
-  
-  return _supabase;
-}
-
-// Exportar un proxy 'supabase' para mantener compatibilidad con código legacy
-// NOTA: Preferir usar getSupabase() directamente en código nuevo
-export const supabase: ReturnType<typeof createClient<Database>> = new Proxy({} as any, {
-  get(_target, prop: string | symbol) {
-    const client = getSupabase();
-    const value = (client as any)[prop as any];
-    if (typeof value === 'function') return value.bind(client);
-    return value;
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false
   }
 });
 
-// ============================================================================
-// FUNCIONES HELPER
-// ============================================================================
-
+// Funciones helper
 export async function getScores(limit = 20) {
-  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('scores')
     .select(`
@@ -68,7 +34,6 @@ export async function getScores(limit = 20) {
 }
 
 export async function getScoreById(id: string) {
-  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('scores')
     .select(`
@@ -83,7 +48,6 @@ export async function getScoreById(id: string) {
 }
 
 export async function getComposers() {
-  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('composers')
     .select('*')
@@ -94,12 +58,10 @@ export async function getComposers() {
 }
 
 export async function incrementDownloads(scoreId: string) {
-  const supabase = getSupabase();
-  // Cast to `any` because RPC typings are not defined in the `Database` type
-  // (adds flexibility until you add a typed Functions section to `Database`).
-  const { error } = await (supabase as any).rpc('increment_downloads', {
-    score_id: scoreId
-  });
+  const { error } = await supabase
+    .from('scores')
+    .update({ downloads: supabase.sql`downloads + 1` })
+    .eq('id', scoreId);
 
   if (error) throw error;
 }

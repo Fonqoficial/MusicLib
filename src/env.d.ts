@@ -19,13 +19,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
-
-// Declaraciones globales para añadir información disponible en middleware
-declare global {
-  interface Locals {
-    // Usuario autenticado (si existe) — proveniente de Supabase session
-    user?: import('@supabase/supabase-js').User;
-    // Indicador de que el usuario es administrador
-    isAdmin?: boolean;
-  }
-}
