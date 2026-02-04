@@ -5,7 +5,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 
-**Music Library** es una aplicación web de alto rendimiento construida con **Astro**. Ofrece una interfaz elegante para gestionar y visualizar tu colección de álbumes, aprovechando la arquitectura de islas para una carga ultrarrápida.
+**Music Library** es una aplicación web de alto rendimiento construida con **Astro**. Ofrece una interfaz elegante para gestionar y visualizar tu colección de Partituras.
 
 🚀 **Demo en vivo:** [https://musiclibrary-seven.vercel.app/](https://musiclibrary-seven.vercel.app/)
 
