@@ -118,21 +118,7 @@ if (sessionCookie) {
       }
 
       console.log('Login exitoso:', data);
-
-      // Verificar rol de admin
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .single();
-
-      if (roleError || !roleData || roleData.role !== 'admin') {
-        await supabase.auth.signOut();
-        throw new Error('No tienes permisos de administrador');
-      }
-
-      console.log('Rol verificado:', roleData);
-
+      
       // Obtener URL de redirección
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect') || '/admin';
