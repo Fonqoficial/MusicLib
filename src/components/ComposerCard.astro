@@ -17,12 +17,22 @@ const lifespan = composer.birth_year && composer.death_year
 <article class="card group hover:scale-[1.02] transition-transform duration-200">
   <a href={`/compositores/${composer.id}`} class="block">
     
-    <!-- Avatar -->
-    <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-3xl font-bold">
-      {composer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+    <div class="mx-auto mb-4 w-24 h-24 relative">
+      {composer.imagen_url ? (
+        <img 
+          src={composer.imagen_url} 
+          alt={`Retrato de ${composer.name}`}
+          class="w-24 h-24 rounded-full object-cover border-2 border-primary-100 shadow-md"
+          loading="lazy"
+        />
+      ) : (
+        /* Fallback: Si no hay imagen, mostramos las iniciales */
+        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-md">
+          {composer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+        </div>
+      )}
     </div>
 
-    <!-- Contenido -->
     <div class="text-center space-y-2">
       <h3 class="text-xl font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
         {composer.name}
@@ -39,7 +49,7 @@ const lifespan = composer.birth_year && composer.death_year
       </p>
 
       {composer.bio && (
-        <p class="text-sm text-gray-700 line-clamp-3 mt-3">
+        <p class="text-sm text-gray-700 line-clamp-3 mt-3 px-2">
           {composer.bio}
         </p>
       )}
