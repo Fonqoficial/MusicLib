@@ -41,7 +41,7 @@ const { scoreId, scoreTitle, currentDownloads } = Astro.props;
 </div>
 
 <script>
-  const btn = document.getElementById('advanced-download-btn');
+  const btn = document.getElementById('advanced-download-btn') as HTMLButtonElement;
   const btnText = btn?.querySelector('.btn-text');
   const counter = document.getElementById('download-counter');
   const progressBar = document.getElementById('progress-bar');

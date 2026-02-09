@@ -114,7 +114,7 @@ import Layout from '@/layouts/Layout.astro';
         .from('user_roles')
         .select('role')
         .eq('user_id', data.user.id)
-        .single();
+        .single() as { data: { role: string } | null; error: any };
 
       if (roleError) {
         console.error('Error verificando rol:', roleError);

@@ -10,7 +10,7 @@ export async function getUserRole(userId: string) {
     .from('user_roles')
     .select('role')
     .eq('user_id', userId)
-    .single();
+    .single<{ role: string }>();
 
   if (error) return null;
   return data?.role;

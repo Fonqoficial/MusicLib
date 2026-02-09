@@ -1,5 +1,3 @@
-import { formatDate, formatDuration, translateDifficulty, slugify, truncate, debounce } from '@/lib/utils';
-
 // Formatear fecha
 formatDate('2024-01-15'); // "15 de enero de 2024"
 
