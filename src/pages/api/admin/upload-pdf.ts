@@ -1,23 +1,21 @@
 import type { APIRoute } from 'astro';
 import { uploadPDF, generatePDFKey } from '@/lib/r2';
 import { supabase } from '@/lib/supabase';
-import { requireAdmin } from '@/lib/auth';
+import { isAdmin } from '@/lib/auth';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     // Verificar autenticación
     const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      return new Response(
-        JSON.stringify({ error: 'No autenticado' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
 
-    // Verificar si es admin
-    await requireAdmin(session.user.id);
+if (!session) {
+  return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+}
 
+const adminCheck = await isAdmin(session.user.id);
+if (!adminCheck) {
+  return new Response(JSON.stringify({ error: 'Prohibido: No eres admin' }), { status: 403 });
+}
     // Obtener datos del formulario
     const formData = await request.formData();
     const file = formData.get('pdf') as File;

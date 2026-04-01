@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '@/lib/supabase';
-import { requireAdmin } from '@/lib/auth';
+import { isAdmin } from '@/lib/auth';
 import { z } from 'zod';
 
 // Schema de validación
@@ -29,7 +29,13 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    await requireAdmin(session.user.id);
+    const adminCheck = await isAdmin(session.user.id);
+if (!adminCheck) {
+  return new Response(
+    JSON.stringify({ error: 'Acceso denegado: Se requieren permisos de administrador' }),
+    { status: 403, headers: { 'Content-Type': 'application/json' } }
+  );
+}
 
     // Validar datos
     const body = await request.json();
@@ -90,7 +96,7 @@ export const PUT: APIRoute = async ({ request }) => {
       );
     }
 
-    await requireAdmin(session.user.id);
+    await isAdmin(session.user.id);
 
     const body = await request.json();
     const { id, ...updateData } = body;
@@ -147,7 +153,7 @@ export const DELETE: APIRoute = async ({ request }) => {
       );
     }
 
-    await requireAdmin(session.user.id);
+    await isAdmin(session.user.id);
 
     const { id } = await request.json();
 
