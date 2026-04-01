@@ -25,11 +25,11 @@ function isActive(href: string) {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                 d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
         </svg>
-        <span>Noted</span>
+        <span>MusicLib</span>
       </a>
 
       <!-- Desktop Navigation -->
-      <div class="hidden md:flex space-x-8">
+      <div class="hidden md:flex items-center space-x-8">
         {navLinks.map(link => (
           <a 
             href={link.href}
@@ -42,6 +42,21 @@ function isActive(href: string) {
             {link.label}
           </a>
         ))}
+
+        <!-- User Menu (Client-side rendered) -->
+        <div id="user-menu" class="hidden items-center gap-4">
+          <a href="/account" class="text-sm font-medium text-gray-700 hover:text-primary-600">
+            Mi Cuenta
+          </a>
+          <div id="user-avatar" class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer"></div>
+        </div>
+
+        <!-- Login Button (Client-side rendered) -->
+        <div id="login-button" class="hidden">
+          <a href="/login" class="text-sm font-medium text-gray-700 hover:text-primary-600">
+            Iniciar Sesión
+          </a>
+        </div>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -70,11 +85,26 @@ function isActive(href: string) {
           {link.label}
         </a>
       ))}
+      
+      <div id="mobile-user-links" class="hidden mt-2 pt-2 border-t border-gray-200">
+        <a href="/account" class="block py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg">
+          Mi Cuenta
+        </a>
+      </div>
+
+      <div id="mobile-login-link" class="hidden mt-2 pt-2 border-t border-gray-200">
+        <a href="/login" class="block py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg">
+          Iniciar Sesión
+        </a>
+      </div>
     </div>
   </nav>
 </header>
 
 <script>
+  import { createBrowserClient } from '@/lib/supabase';
+  import { getCurrentUser, getUserProfile } from '@/lib/auth';
+
   // Toggle mobile menu
   const button = document.getElementById('mobile-menu-button');
   const menu = document.getElementById('mobile-menu');
@@ -82,4 +112,48 @@ function isActive(href: string) {
   button?.addEventListener('click', () => {
     menu?.classList.toggle('hidden');
   });
+
+  // Check user session
+  async function checkSession() {
+    const supabase = createBrowserClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    const userMenu = document.getElementById('user-menu');
+    const loginButton = document.getElementById('login-button');
+    const userAvatar = document.getElementById('user-avatar');
+    const mobileUserLinks = document.getElementById('mobile-user-links');
+    const mobileLoginLink = document.getElementById('mobile-login-link');
+
+    if (session) {
+      // Usuario logueado
+      const user = await getCurrentUser();
+      const profile = user ? await getUserProfile(user.id) : null;
+      
+      const initials = (profile?.full_name || user?.email || 'U')
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+      
+      if (userAvatar) {
+        userAvatar.textContent = initials;
+      }
+
+      userMenu?.classList.remove('hidden');
+      userMenu?.classList.add('flex');
+      loginButton?.classList.add('hidden');
+      mobileUserLinks?.classList.remove('hidden');
+      mobileLoginLink?.classList.add('hidden');
+    } else {
+      // Usuario no logueado
+      userMenu?.classList.add('hidden');
+      loginButton?.classList.remove('hidden');
+      loginButton?.classList.add('block');
+      mobileUserLinks?.classList.add('hidden');
+      mobileLoginLink?.classList.remove('hidden');
+    }
+  }
+
+  checkSession();
 </script>

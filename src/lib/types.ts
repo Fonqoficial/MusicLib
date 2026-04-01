@@ -11,32 +11,46 @@ export interface Database {
         Insert: Omit<Score, 'id' | 'created_at' | 'updated_at' | 'views' | 'downloads'>;
         Update: Partial<Omit<Score, 'id' | 'created_at'>>;
       };
-      tags: {
-        Row: Tag
-        Insert: Omit<Tag, 'id'>
-        Update: Partial<Omit<Tag, 'id'>>
-      }
-      score_tags: {
-        Row: ScoreTag
-        Insert: ScoreTag
-        Update: Partial<ScoreTag>
-      }
       user_roles: {
-        Row: UserRole
-        Insert: Omit<UserRole, 'created_at'>
-        Update: Partial<Omit<UserRole, 'created_at'>>
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-  }
+        Row: {
+          id: string;
+          user_id: string;
+          role: 'admin' | 'user';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          role?: 'admin' | 'user';
+        };
+        Update: {
+          role?: 'admin' | 'user';
+        };
+      };
+      user_profiles: {
+        Row: {
+          id: string;
+          user_id: string;
+          full_name: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          full_name?: string | null;
+          avatar_url?: string | null;
+          bio?: string | null;
+        };
+        Update: {
+          full_name?: string | null;
+          avatar_url?: string | null;
+          bio?: string | null;
+        };
+      };
+    };
+  };
 }
 
 export interface Composer {
@@ -46,7 +60,6 @@ export interface Composer {
   death_year: number | null;
   nationality: string | null;
   bio: string | null;
-  imagen_url: string | null;
   created_at: string;
 }
 
@@ -70,20 +83,4 @@ export interface Score {
 
 export interface ScoreWithComposer extends Score {
   composer: Composer;
-}
-
-export interface Tag {
-  id: string
-  name: string
-}
-
-export interface ScoreTag {
-  score_id: string
-  tag_id: string
-}
-
-export interface UserRole {
-  user_id: string
-  role: string // 'admin' | 'user' | etc.
-  created_at: string
 }

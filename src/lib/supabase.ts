@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Cliente para el servidor (sin persistencia de sesión)
+// Cliente para servidor (SSR)
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,
@@ -16,18 +16,23 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   }
 });
 
-// Cliente para el navegador (CON persistencia de sesión)
+// Cliente para navegador
 export const createBrowserClient = () => {
+  if (typeof window === 'undefined') {
+    return supabase;
+  }
+
   return createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      storage: window.localStorage,
     }
   });
 };
 
+// Funciones helper existentes...
 export async function getScores(limit = 20) {
   const { data, error } = await supabase
     .from('scores')
@@ -45,7 +50,6 @@ export async function getScores(limit = 20) {
   if (error) throw error;
   return data;
 }
-
 
 export async function getScoreById(id: string) {
   const { data, error } = await supabase
@@ -72,10 +76,9 @@ export async function getComposers() {
 }
 
 export async function incrementDownloads(scoreId: string) {
-  const { error } = await supabase
-    .from('scores')
-    .update({ downloads: supabase.sql`downloads + 1` })
-    .eq('id', scoreId);
+  const { error } = await supabase.rpc('increment_downloads', {
+    score_id: scoreId
+  });
 
   if (error) throw error;
 }
