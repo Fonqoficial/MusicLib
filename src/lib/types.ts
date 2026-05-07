@@ -29,3 +29,35 @@ export interface Score {
 export interface ScoreWithComposer extends Score {
   composer: Composer;
 }
+
+export interface Database {
+  public: {
+    Tables: {
+      composers: {
+        Row: Composer;
+        Insert: Omit<Composer, 'id' | 'created_at'>; // Ajusta según necesites
+        Update: Partial<Omit<Composer, 'id' | 'created_at'>>;
+      };
+      scores: {
+        Row: Score;
+        Insert: Omit<Score, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Score, 'id' | 'created_at' | 'updated_at'>>;
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      // AQUÍ ES DONDE DEFINES TU FUNCIÓN
+      increment_downloads: {
+        Args: {
+          score_id: string;
+        };
+        Returns: void;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+  };
+}
