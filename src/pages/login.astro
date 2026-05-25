@@ -128,9 +128,9 @@ const message = Astro.url.searchParams.get('message');
 </Layout>
 
 <script>
-  import { createBrowserClient } from '@/lib/supabase';
+  import { getBrowserClient } from '@/lib/supabase';
 
-  const supabase = createBrowserClient();
+  const supabase = getBrowserClient();
   
   const form = document.getElementById('login-form') as HTMLFormElement;
   const errorDiv = document.getElementById('error-message');

@@ -140,9 +140,9 @@ import Layout from '@/layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { createBrowserClient } from '@/lib/supabase';
+  import { getBrowserClient } from '@/lib/supabase';
 
-  const supabase = createBrowserClient();
+  const supabase = getBrowserClient();
   
   const form = document.getElementById('register-form') as HTMLFormElement;
   const errorDiv = document.getElementById('error-message');

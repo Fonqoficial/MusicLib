@@ -6,13 +6,15 @@ import SearchBar from '@/components/SearchBar.astro';
 import ScoreCard from '@/components/ScoreCard.astro';
 import ComposerCard from '@/components/ComposerCard.astro';
 import { supabase } from '@/lib/supabase';
+import type { Composer, ScoreWithComposer } from '@/lib/types'; // ✅ Importamos los tipos
 
 // Obtener parámetro de búsqueda
 const url = new URL(Astro.request.url);
 const query = url.searchParams.get('q') || '';
 
-let scores = [];
-let composers = [];
+// ✅ SOLUCIÓN: Definimos el tipo de los arrays desde el inicio
+let scores: ScoreWithComposer[] = [];
+let composers: Composer[] = [];
 
 if (query.trim()) {
   // Buscar en partituras
@@ -29,7 +31,8 @@ if (query.trim()) {
     .or(`title.ilike.%${query}%,instrument.ilike.%${query}%,genre.ilike.%${query}%`)
     .limit(12);
 
-  scores = scoresData || [];
+  // ✅ Forzamos el tipo al asignar los datos
+  scores = (scoresData as unknown as ScoreWithComposer[]) || [];
 
   // Buscar en compositores
   const { data: composersData } = await supabase
@@ -38,7 +41,8 @@ if (query.trim()) {
     .ilike('name', `%${query}%`)
     .limit(8);
 
-  composers = composersData || [];
+  // ✅ Forzamos el tipo al asignar los datos
+  composers = (composersData as Composer[]) || [];
 }
 ---
 
@@ -71,7 +75,7 @@ if (query.trim()) {
               Compositores
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {composers.map(composer => (
+              {composers.map((composer: Composer) => (
                 <ComposerCard composer={composer} />
               ))}
             </div>
@@ -85,7 +89,7 @@ if (query.trim()) {
               Partituras
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {scores.map(score => (
+              {scores.map((score: ScoreWithComposer) => (
                 <ScoreCard score={score} />
               ))}
             </div>
