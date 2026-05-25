@@ -5,6 +5,7 @@ export interface Composer {
   death_year: number | null;
   nationality: string | null;
   bio: string | null;
+  imagen_url: string | null;
   created_at: string;
 }
 

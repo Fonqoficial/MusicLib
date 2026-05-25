@@ -20,20 +20,19 @@ const {
   <meta name="description" content={description} />
   <meta name="generator" content={Astro.generator} />
   
-  <!-- Open Graph -->
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
-  <link rel="shortcut icon" href="Logo Noted.png"  type="image/x-icon">
-  <title>{title}</title>
-</head>
-<body class="min-h-screen flex flex-col">
-  <slot name="header" />
   
+  <!-- CORREGIDO: Ruta absoluta y nombre sin espacios -->
+  <link rel="shortcut icon" href="/logo-noted.png" type="image/x-icon">
+  <title>{title} | Noted Library</title>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900"> <!-- Añadido fondo suave -->
+  <slot name="header" />
   <main class="flex-1">
     <slot />
   </main>
-  
   <slot name="footer" />
 </body>
 </html>

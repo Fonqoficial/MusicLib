@@ -1,7 +1,21 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { supabase } from '@/lib/supabase';
+import { isAdmin } from '@/lib/auth';
 
+// 1. Verificar sesión en el servidor
+const { data: { session } } = await supabase.auth.getSession();
+
+if (!session) {
+  return Astro.redirect('/login');
+}
+
+// 2. Verificar que sea administrador
+const adminCheck = await isAdmin(session.user.id);
+if (!adminCheck) {
+  return Astro.redirect('/'); // O a una página de 403
+}
+---
 // Obtener estadísticas
 const { count: totalScores } = await supabase
   .from('scores')

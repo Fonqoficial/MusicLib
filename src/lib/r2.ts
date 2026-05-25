@@ -24,96 +24,53 @@ export const r2Client = new S3Client({
   },
 });
 
-/**
- * Subir un archivo PDF a R2
- */
-export async function uploadPDF(
-  file: File,
-  key: string
-): Promise<string> {
+export async function uploadPDF(file: File, key: string): Promise<string> {
   const buffer = await file.arrayBuffer();
-
   const command = new PutObjectCommand({
     Bucket: R2_CONFIG.bucketName,
     Key: key,
     Body: Buffer.from(buffer),
     ContentType: 'application/pdf',
-    ContentDisposition: `attachment; filename="${key}"`,
-    Metadata: {
-      uploadedAt: new Date().toISOString(),
-    },
+    // Cambiamos a inline por defecto para que se pueda previsualizar
+    ContentDisposition: 'inline', 
+    Metadata: { uploadedAt: new Date().toISOString() },
   });
 
   await r2Client.send(command);
-  
-  // Si tienes dominio público, devuelve URL directa
-  if (R2_CONFIG.publicUrl) {
-    return `${R2_CONFIG.publicUrl}/${key}`;
-  }
-  
-  // Si no, devuelve el key para generar URL firmada después
-  return key;
+  return R2_CONFIG.publicUrl ? `${R2_CONFIG.publicUrl}/${key}` : key;
 }
 
-/**
- * Generar URL firmada temporal para descarga
- * @param key - Clave del archivo en R2
- * @param expiresIn - Tiempo de expiración en segundos (default: 1 hora)
- * @param filename - Nombre sugerido para descarga
- */
 export async function getDownloadUrl(
-  key: string,
-  expiresIn: number = 3600,
-  filename?: string
+  key: string, 
+  options: { expiresIn?: number, filename?: string, forceDownload?: boolean } = {}
 ): Promise<string> {
+  const { expiresIn = 3600, filename, forceDownload = false } = options;
+  
+  const disposition = forceDownload 
+    ? `attachment; filename="${filename || 'score.pdf'}"` 
+    : 'inline';
+
   const command = new GetObjectCommand({
     Bucket: R2_CONFIG.bucketName,
     Key: key,
-    ResponseContentDisposition: filename 
-      ? `attachment; filename="${filename}"`
-      : undefined,
+    ResponseContentDisposition: disposition,
   });
 
   return await getSignedUrl(r2Client, command, { expiresIn });
 }
 
-/**
- * Verificar si un archivo existe en R2
- */
 export async function fileExists(key: string): Promise<boolean> {
   try {
-    const command = new HeadObjectCommand({
-      Bucket: R2_CONFIG.bucketName,
-      Key: key,
-    });
-    await r2Client.send(command);
+    await r2Client.send(new HeadObjectCommand({ Bucket: R2_CONFIG.bucketName, Key: key }));
     return true;
-  } catch (error) {
-    return false;
-  }
+  } catch { return false; }
 }
 
-/**
- * Eliminar archivo de R2
- */
 export async function deletePDF(key: string): Promise<void> {
-  const command = new DeleteObjectCommand({
-    Bucket: R2_CONFIG.bucketName,
-    Key: key,
-  });
-
-  await r2Client.send(command);
+  await r2Client.send(new DeleteObjectCommand({ Bucket: R2_CONFIG.bucketName, Key: key }));
 }
 
-/**
- * Generar key único para un PDF
- */
 export function generatePDFKey(title: string, composerId: string): string {
-  const sanitized = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  
-  const timestamp = Date.now();
-  return `scores/${composerId}/${sanitized}-${timestamp}.pdf`;
+  const sanitized = slugify(title); // Usamos la función de utils.ts
+  return `scores/${composerId}/${sanitized}-${Date.now()}.pdf`;
 }

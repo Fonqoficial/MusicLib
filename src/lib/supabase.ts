@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Cliente para servidor (SSR)
+// Cliente Singleton para SSR (Servidor)
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,
@@ -16,13 +16,13 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   }
 });
 
-// Cliente para navegador
-export const createBrowserClient = () => {
-  if (typeof window === 'undefined') {
-    return supabase;
-  }
+// Cliente Singleton para Navegador (Evita recrear el cliente en cada llamada)
+let browserClient: any = null;
+export const getBrowserClient = () => {
+  if (typeof window === 'undefined') return supabase;
+  if (browserClient) return browserClient;
 
-  return createClient<Database>(supabaseUrl, supabaseKey, {
+  browserClient = createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -30,22 +30,20 @@ export const createBrowserClient = () => {
       storage: window.localStorage,
     }
   });
+  return browserClient;
 };
 
-// Funciones helper existentes...
-export async function getScores(limit = 20) {
+// CONSULTAS OPTIMIZADAS
+export async function getScores(limit = 20, page = 0) {
+  const offset = page * limit;
   const { data, error } = await supabase
     .from('scores')
     .select(`
       *,
-      composer:composers (
-        id,
-        name,
-        nationality
-      )
+      composer:composers (id, name, nationality)
     `)
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit - 1); // Implementación de paginación real
 
   if (error) throw error;
   return data;
@@ -54,10 +52,7 @@ export async function getScores(limit = 20) {
 export async function getScoreById(id: string) {
   const { data, error } = await supabase
     .from('scores')
-    .select(`
-      *,
-      composer:composers (*)
-    `)
+    .select(`*, composer:composers (*)`)
     .eq('id', id)
     .single();
 
@@ -79,6 +74,5 @@ export async function incrementDownloads(scoreId: string) {
   const { error } = await supabase.rpc('increment_downloads', {
     score_id: scoreId
   });
-
   if (error) throw error;
 }
